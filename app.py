@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from shared.db import db
 from shared.jwt import jwt
 from routes.auth_routes import auth_blueprint
@@ -15,7 +15,10 @@ from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
 load_dotenv()
-app = Flask(__name__)
+app = Flask(__name__,
+            static_url_path='', 
+            static_folder='./frontend/build',
+            template_folder='./frontend/build')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL")
 app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 jwt.init_app(app)
@@ -23,6 +26,11 @@ db.init_app(app)
 
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(event_blueprint)
+
+
+@app.route("/")
+def hello():
+    return render_template('index.html')
 
 
 ## If you need to init db
