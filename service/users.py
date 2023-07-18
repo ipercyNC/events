@@ -9,7 +9,6 @@ def get_all_users():
 
 def get_user_by_username(username):
     match = User.query.filter_by(username=username).first()
-    print(match)
     return match
 
 def get_user_by_id(id):
@@ -24,3 +23,10 @@ def get_password_hash(username):
 
 def set_refresh_token(username, token):
     User.query.filter_by(username=username).update({"refresh_token" : token})
+    db.session.commit()
+
+def create_user(username, generated_pass):
+    db.session.add(User(username=username, 
+        password=generated_pass,
+        refresh_token='', email=''))
+    db.session.commit()

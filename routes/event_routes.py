@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, abort, jsonify
-from service.events import get_all_events
+from service.events import get_all_events, delete_event_by_id, get_events_by_username
 from service.users import get_all_users, get_user_by_username, get_password_hash, set_refresh_token
 from flask_jwt_extended import create_refresh_token, create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -46,7 +46,21 @@ def token_required(fn):
 
     return decorated
     
-@event_blueprint.route("/events", methods=["GET"])
+@event_blueprint.route("/events", methods=["GET"], endpoint="get_all_events")
 @token_required
 def view_users(current_user):
     return get_all_events()
+
+@event_blueprint.route("/events/<username>", methods=["GET"], endpoint="get_events_by_username")
+@token_required
+def view_users(current_user, username):
+    print(current_user,username)
+    return get_events_by_username(username)
+
+@event_blueprint.route("/events/<id>", methods=['DELETE'], endpoint="delete_event")
+def get(id):
+    delete_event_by_id(id)
+    return {
+        "message": "Event deleted",
+        "error": ""
+    }, 200

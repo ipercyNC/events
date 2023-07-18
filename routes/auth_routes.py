@@ -2,7 +2,7 @@
 #https://www.loginradius.com/blog/engineering/guest-post/securing-flask-api-with-jwt/
 from flask import Blueprint, current_app, request, abort, jsonify
 from service.events import get_all_events
-from service.users import get_all_users, get_user_by_username, get_password_hash, get_user_by_id, set_refresh_token
+from service.users import get_all_users, get_user_by_username, get_password_hash, get_user_by_id, set_refresh_token, create_user
 from flask_jwt_extended import create_refresh_token, create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -48,7 +48,7 @@ def token_required(fn):
 
     return decorated
 
-@auth_blueprint.route("/users/login", methods=["POST"])
+@auth_blueprint.route("/users/login", methods=["POST"], endpoint="login")
 def login_user():
     data = request.json
     if not data:
@@ -77,15 +77,51 @@ def login_user():
     # generated_pass = generate_password_hash(password)
     refresh_token = create_refresh_token(identity=username)
     set_refresh_token(username, refresh_token)
-    print(refresh_token)
-    resp = jsonify( {
-            "message": "Login success",
+    current_user = get_user_by_username(username)
+    resp = jsonify({
+            "user": current_user.to_frontend_json(),
             "error": None
         })
     set_refresh_cookies(resp, refresh_token)
     return resp, 200
 
-@auth_blueprint.route("/users/verify", methods=["GET"]) 
+@auth_blueprint.route("/users/register", methods=["POST"], endpoint="register")
+def login_user():
+    data = request.json
+    if not data:
+        return {
+            "message": "Please provide username and password",
+            "error": "Bad Request"
+        }, 400
+    username = data.get("username", None)
+    password = data.get("password", None)  
+    if not username or not password:
+        return {
+            "message": "Please provide username and password",
+            "error": "Bad Request"
+        }, 400
+    password_hash = get_password_hash(username)
+    if not password_hash: 
+        generated_pass = generate_password_hash(password)
+        create_user(username, generated_pass)
+    else:
+        return {
+            "message": "User already exists, please login",
+            "error": "Bad Request"
+        }, 400
+    
+    refresh_token = create_refresh_token(identity=username)
+    set_refresh_token(username, refresh_token)
+    current_user = get_user_by_username(username)
+    resp = jsonify({
+            "user": current_user.to_frontend_json(),
+            "error": None
+        })
+    set_refresh_cookies(resp, refresh_token)
+    return resp, 200
+
+
+@auth_blueprint.route("/users/verify", methods=["GET"], endpoint="verify_user") 
 @token_required
 def verify_user(current_user):
     return {
@@ -93,13 +129,13 @@ def verify_user(current_user):
             "error": None
         }, 200
 
-@auth_blueprint.route("/users", methods=["GET"])
+@auth_blueprint.route("/users", methods=["GET"], endpoint="get_all_users")
 @token_required
 def view_users(current_user):
     return get_all_users()
 
 
-@auth_blueprint.route("/users/<id>", methods=['GET'])
+@auth_blueprint.route("/users/<id>", methods=['GET'], endpoint="get_user_by_id")
 def get(id):
     return get_user_by_id(id)
 

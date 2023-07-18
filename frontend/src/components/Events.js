@@ -1,4 +1,4 @@
-import { useContext, useState, handleSelect } from 'react';
+import { useContext, useState, handleSelect, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -18,50 +18,72 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Divider from '@mui/material/Divider';
+import TextField from '@mui/material/TextField';
 
 const localizer = momentLocalizer(moment)
 
-export default function Events({ }) {
-    const [events, setEvents] = useState(null);
+export default function Events({ user }) {
+    const [events, setEvents] = useState([])
+    const [filteredEvents, setFilteredEvents] = useState([])
     const [selectedEvent, setSelectedEvent] = useState(undefined)
     const [selectedEvents, setSelectedEvents] = useState(undefined)
     const [modalState, setModalState] = useState(false)
     const [selectedDate, setSelectedDate] = useState(undefined)
 
     function getEvents() {
-        axios.get("/events")
+        axios.get("/events/" + user.username)
             .then(response => {
-                console.log("events", response)
-                const incomingEvents = response.data.map(({start, end, ...rest}) => {
+                const incomingEvents = response.data.map(({ start, end, ...rest }) => {
                     return {
                         start: new Date(Date.parse(start)),
                         end: new Date(Date.parse(end)),
                         ...rest
-                       
+
                     }
                 })
                 setEvents(incomingEvents)
+                setFilteredEvents(incomingEvents)
             })
     }
+
+    useEffect(() => {
+        getEvents()
+    }, [])
     const handleSelectedEvent = (event) => {
         setSelectedEvent(event)
         setModalState(true)
         setSelectedEvents(undefined)
     }
-
+    const handleSearch = (e) => {
+        if (e.target.value.length < 1)
+            setFilteredEvents(events)
+        else {
+            let val = events.map(event => {
+                if (event.title.indexOf(e.target.value) !== -1 ||
+                    event.description.indexOf(e.target.value) !== -1
+                ) {
+                    return event
+                }
+                return null
+            })
+            setFilteredEvents(val)
+        }
+    }
+    const handleDelete = (e, eventToDelete) => {
+        e.stopPropagation();
+        console.log(e)
+        console.log(eventToDelete)
+        axios.delete("/events/" + eventToDelete.id)
+            .then(response => getEvents())
+    }
     const handleSelectedSlot = (selectedSlot) => {
         setSelectedEvent(undefined)
         setSelectedEvents(undefined)
-        console.log("hey")
         const { start, end } = selectedSlot;
         const startDate = new Date(start)
         const endDate = new Date(end)
-        console.log(start, end)
         const eventsForThisDay = events.filter(
             event => {
-                console.log(new Date(event.start))
-                console.log(new Date(event.start).toDateString())
-                console.log(startDate.toDateString())
                 if (startDate.toDateString() == (new Date(event.start).toDateString()) ||
                     (startDate.toDateString() > (new Date(event.start).toDateString())
                         && endDate.toDateString() < (new Date(event.end).toDateString()))) {
@@ -71,7 +93,6 @@ export default function Events({ }) {
         )
         if (eventsForThisDay.length > 0) {
             setSelectedEvents(eventsForThisDay)
-            console.log(eventsForThisDay)
             setModalState(true)
             setSelectedDate(startDate.toDateString())
         } else {
@@ -102,7 +123,7 @@ export default function Events({ }) {
                                     sx={{ display: "flex" }}
                                 >
                                     <Typography align="left" sx={{ width: '100%' }}>{selectedEvent.title}</Typography>
-                                    <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={() => console.log(selectedEvent)}>
+                                    <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={(e) => handleDelete(e, selectedEvent)}>
                                         <Typography variant="caption">Delete</Typography>
                                     </Button>
                                 </AccordionSummary>
@@ -145,7 +166,7 @@ export default function Events({ }) {
                                             sx={{ display: "flex" }}
                                         >
                                             <Typography align="left" sx={{ width: '100%' }}>{selectedEvent.title}</Typography>
-                                            <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={() => console.log(selectedEvent)}>
+                                            <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={e => handleDelete(e, selectedEvent)}>
                                                 <Typography variant="caption">Delete</Typography>
                                             </Button>
                                         </AccordionSummary>
@@ -164,26 +185,26 @@ export default function Events({ }) {
         )
     }
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            {events && events.length > 0 ?
-                <div>
+        <Box sx={{ flex: 1 }}>
+            <Box sx={{ bgcolor: 'background.paper' }}>
+                <Box sx={{ display: "inline-flex" }} >
+                    <Typography variant="h6" sx={{ padding: 2 }}>Search By Title or Description</Typography>
+                    <TextField id="standard-basic" label="Search" variant="standard" onChange={(e) => handleSearch(e)} />
+                </Box>
+                <Calendar
+                    localizer={localizer}
+                    events={filteredEvents}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: 500 }}
+                    selectable={true}
+                    onSelectSlot={(e) => handleSelectedSlot(e)}
+                    onSelectEvent={(e) => handleSelectedEvent(e)}
+                />
+                {selectedEvent && <Modal />}
+                {selectedEvents && <MultiEventsModal />}
+            </Box>
 
-                    <Calendar
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        style={{ height: 500 }}
-                        selectable={true}
-                        onSelectSlot={(e) => handleSelectedSlot(e)}
-                        onSelectEvent={(e) => handleSelectedEvent(e)}
-                    // onShowMore={(events, date) => this.setState({ showModal: true, events })}
-                    />
-                    {selectedEvent && <Modal />}
-                    {selectedEvents && <MultiEventsModal />}
-                </div> :
-                <Button onClick={getEvents} color="inherit">Get Events</Button>
-            }
         </Box>
     );
 }

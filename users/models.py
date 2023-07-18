@@ -12,9 +12,15 @@ class User(db.Model):
 
     def to_json(self):
         return {
+            "id": self.id,
             "username": self.username,
             "password": self.password,
             "email": self.email,
             "refresh_token": self.refresh_token,
             "date_created": self.date_created
+        }
+    def to_frontend_json(self):
+        return {
+            "username": self.username,
+            "email": self.email
         }

@@ -14,6 +14,7 @@ class Event(db.Model):
 
     def to_json(self):
         return {
+            "id": self.id,
             "title": self.title,
             "description": self.description,
             "state": self.state,
