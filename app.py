@@ -56,7 +56,7 @@ with app.app_context():
         #     print(r)
         match = User.query.filter_by(username=test_user).first()
         db.session.add(Event(title="test title", description="test description", 
-            user_id=match.id, event_date="2023-02-02"))
+            user_id=match.id, start="2023-07-17 08:00:00", end="2023-07-17 09:00:00"))
         db.session.commit()
 
         print("Creation successful")

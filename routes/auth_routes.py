@@ -7,7 +7,7 @@ from flask_jwt_extended import create_refresh_token, create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
-from flask_jwt_extended import set_refresh_cookies, set_access_cookies
+from flask_jwt_extended import set_refresh_cookies, set_access_cookies, unset_jwt_cookies
 from flask_jwt_extended import decode_token
 from functools import wraps
 import jwt
@@ -102,3 +102,12 @@ def view_users(current_user):
 @auth_blueprint.route("/users/<id>", methods=['GET'])
 def get(id):
     return get_user_by_id(id)
+
+@auth_blueprint.route("/users/logout", methods=["POST"],  endpoint='logout')
+def login_user():
+    resp = jsonify( {
+            "message": "Logout success",
+            "error": None
+        })
+    unset_jwt_cookies(resp)
+    return resp, 200
