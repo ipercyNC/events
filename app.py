@@ -19,8 +19,8 @@ app = Flask(__name__,
             static_url_path='', 
             static_folder='./frontend/build',
             template_folder='./frontend/build')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL")
-app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL") or os.environ.get("DB_URL")
+app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY") or os.environ.get("JWT_SECRET_KEY")
 jwt.init_app(app)
 db.init_app(app)
 
