@@ -63,6 +63,3 @@ with app.app_context():
     except exc.IntegrityError as e:
         print(e)
         db.session.rollback()
-
-if __name__ == '__main__':
-    app.run(debug=False)
