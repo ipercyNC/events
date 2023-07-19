@@ -19,7 +19,13 @@ import ListItem from '@mui/material/ListItem';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
-
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import Input from '@mui/material/Input';
+import InputLabel from '@mui/material/InputLabel';
 const localizer = momentLocalizer(moment)
 
 export default function Events({ user }) {
@@ -29,6 +35,10 @@ export default function Events({ user }) {
     const [selectedEvents, setSelectedEvents] = useState(undefined)
     const [modalState, setModalState] = useState(false)
     const [selectedDate, setSelectedDate] = useState(undefined)
+    const [title, setTitle] = useState("")
+    const [description, setDescription] = useState("")
+    const [startDate, setStartDate] = useState(undefined)
+    const [endDate, setEndDate] = useState(undefined)
 
     function getEvents() {
         axios.get("/events/" + user.username)
@@ -45,10 +55,26 @@ export default function Events({ user }) {
                 setFilteredEvents(incomingEvents)
             })
     }
+    function handleAddEvent() {
+        console.log(user)
+        axios.post("/events",
+            {
+                "title": title,
+                "description": description,
+                "username": user.username,
+                "start": startDate,
+                "end": endDate
+            })
+            .then(response => {
+                console.log("added", response)
+                getEvents()
+            })
+    }
 
     useEffect(() => {
         getEvents()
     }, [])
+
     const handleSelectedEvent = (event) => {
         setSelectedEvent(event)
         setModalState(true)
@@ -71,10 +97,15 @@ export default function Events({ user }) {
     }
     const handleDelete = (e, eventToDelete) => {
         e.stopPropagation();
-        console.log(e)
-        console.log(eventToDelete)
         axios.delete("/events/" + eventToDelete.id)
             .then(response => getEvents())
+        if (selectedEvent) {
+            setSelectedEvent(null)
+        }
+        if (selectedEvents) {
+            let newSelectedEvents = selectedEvents.filter(event => event.title !== eventToDelete.title)
+            setSelectedEvents(newSelectedEvents)
+        }
     }
     const handleSelectedSlot = (selectedSlot) => {
         setSelectedEvent(undefined)
@@ -157,7 +188,7 @@ export default function Events({ user }) {
                         </Typography>
                         {selectedEvents.map(selectedEvent => {
                             return (
-                                <ListItem  >
+                                <ListItem >
                                     <Accordion sx={{ width: 1000 }}>
                                         <AccordionSummary
                                             expandIcon={<ExpandMoreIcon />}
@@ -186,17 +217,71 @@ export default function Events({ user }) {
     }
     return (
         <Box sx={{ flex: 1 }}>
-            <Box sx={{ bgcolor: 'background.paper' }}>
-                <Box sx={{ display: "inline-flex" }} >
-                    <Typography variant="h6" sx={{ padding: 2 }}>Search By Title or Description</Typography>
-                    <TextField id="standard-basic" label="Search" variant="standard" onChange={(e) => handleSearch(e)} />
+            <Box >
+                <Accordion sx={{ width: "95%vw", display: "flex", height: 70 }}>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                        display="flex"
+                    >
+                        <Typography variant="subtitle1" >Search By Title or Description</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <TextField id="standard-basic" label="Search" variant="outlined" sx={{ width: 900, height: 50 }} onChange={(e) => handleSearch(e)} size="small" />
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion sx={{ width: "95%vw", display: "flex", height: 70 }}>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                        display="flex"
+                    >
+                        <Typography variant="subtitle1" component="div" >
+                            Add Event
+                        </Typography>                    </AccordionSummary>
+                    <AccordionDetails >
+
+                        <FormControl variant="outlined">
+                            <TextField id="title-textfield" label="Title" variant="outlined" value={title} onChange={(e) => setTitle(e.target.value)} size="small" />
+                        </FormControl>
+                        <FormControl variant="outlined">
+                            <TextField id="description-textfield" label="Description" variant="outlined" value={description} onChange={(e) => setDescription(e.target.value)} size="small" />
+                        </FormControl>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DateTimePicker
+                                label="Start"
+                                value={startDate}
+                                onChange={(newValue) => setStartDate(newValue)}
+                                slotProps={{ textField: { size: 'small' } }} />
+                            <DateTimePicker
+                                label="End"
+                                value={endDate}
+                                onChange={(newValue) => setEndDate(newValue)}
+                                slotProps={{ textField: { size: 'small' } }}
+                            />
+                        </LocalizationProvider>
+                        <Button onClick={handleAddEvent} color="inherit" variant="outlined" sx={{height:40}}>Add Event</Button>
+                    </AccordionDetails>
+                </Accordion>
+                <Box
+                    component="form"
+                    sx={{
+                        '& > :not(style)': { m: 1 },
+                        width: "100vw"
+                    }}
+                    noValidate
+                    autoComplete="off"
+                >
+
                 </Box>
                 <Calendar
                     localizer={localizer}
                     events={filteredEvents}
                     startAccessor="start"
                     endAccessor="end"
-                    style={{ height: 500 }}
+                    style={{ height: 500, paddingTop: 6, paddingBottom: 6 }}
                     selectable={true}
                     onSelectSlot={(e) => handleSelectedSlot(e)}
                     onSelectEvent={(e) => handleSelectedEvent(e)}

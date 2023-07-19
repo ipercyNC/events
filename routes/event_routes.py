@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, request, abort, jsonify
-from service.events import get_all_events, delete_event_by_id, get_events_by_username
+from service.events import get_all_events, delete_event_by_id, get_events_by_username, create_event
 from service.users import get_all_users, get_user_by_username, get_password_hash, set_refresh_token
 from flask_jwt_extended import create_refresh_token, create_access_token
 from flask_jwt_extended import get_jwt_identity
@@ -64,3 +64,30 @@ def get(id):
         "message": "Event deleted",
         "error": ""
     }, 200
+
+@event_blueprint.route("/events", methods=["POST"], endpoint="add_event")
+def add_event():
+    data = request.json
+    if not data:
+        return {
+            "message": "Please event data",
+            "error": "Bad Request"
+        }, 400
+    title = data.get("title", None)
+    description = data.get("description", None) 
+    username = data.get("username", None)
+    start = data.get("start", None)
+    end = data.get("end", None)
+    current_user = get_user_by_username(username)
+    print(title, description, current_user, start, end)
+    if not title or not description or not username or not start or not end:
+        return {
+            "message": "Please provide all information for the event",
+            "error": "Bad Request"
+        }, 400
+    event = create_event(title, description, current_user.id, start, end)
+    resp = jsonify({
+            "message": event,
+            "error": None
+        })
+    return resp, 200

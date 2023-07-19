@@ -63,23 +63,24 @@ function App() {
   return (
     <div>
       <Header user={user} handleLogin={handleLogin} setUser={setUser} handleLogout={handleLogout} />
-      {user ? <Events user= {user} /> :
+      {user ? 
+        <Events user={user} /> :
         <Box
           component="form"
           sx={{
             '& > :not(style)': { m: 1 },
-            alignItems:"center",
+            alignItems: "center",
             justifyContent: "center",
-            display:"flex",
+            display: "flex",
             width: "100vw"
           }}
           noValidate
           autoComplete="off"
         >
-          <Typography variant="h5" component="div" align="center" sx={{height:38}}>
+          <Typography variant="h5" component="div" align="center" sx={{ height: 38 }}>
             Please Log In Or Register
           </Typography>
-          <Divider/>
+          <Divider />
           <FormControl variant="standard">
             <InputLabel htmlFor="username">Username</InputLabel>
             <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />

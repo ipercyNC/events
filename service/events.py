@@ -20,3 +20,7 @@ def get_events_by_username(username):
         return jsonify(events)
     return None
     
+def create_event(title, description, user_id, start, end):
+    db.session.add(Event(title=title, description=description, 
+        user_id=user_id, start=start, end=end))
+    db.session.commit()
