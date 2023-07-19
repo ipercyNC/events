@@ -25,6 +25,5 @@ PyPDF2==1.26.0
 python-dotenv==0.21.1
 SQLAlchemy==2.0.19
 typing-extensions==4.7.1
-vboxapi==1.0
 Werkzeug==2.3.6
 zipp==3.16.2
