@@ -113,9 +113,17 @@ def setup_db(app):
             print(e)
             db.session.rollback()
 
+def run_gunicorn():
+    app = create_app()
+    app = init_db_and_jwt(app)
+    app = setup_db(app)
+    app.run(debug=False)
+    
 if __name__ == "__main__":
     logger.info("Server starting")
     app = create_app()
     app = init_db_and_jwt(app)
     app = setup_db(app)
     app.run(debug=False)
+
+
