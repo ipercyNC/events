@@ -1,9 +1,15 @@
-import { useContext, useState, handleSelect, useEffect } from 'react';
-import AppBar from '@mui/material/AppBar';
+/*
+ * Events.js
+ * 7/19/2023
+ * Ian Percy
+ * 
+ * 
+ * Events view for the application. This will allow users to see their events,
+ * search, delete, and add events
+ */
+import { useContext, useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import axios from 'axios';
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -23,82 +29,141 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import Input from '@mui/material/Input';
-import InputLabel from '@mui/material/InputLabel';
 const localizer = momentLocalizer(moment)
 
 export default function Events({ user }) {
+    // Set the necessary variables for the class
+    // Events is cached and filteredEvents is the working copy of the events list
     const [events, setEvents] = useState([])
     const [filteredEvents, setFilteredEvents] = useState([])
     const [selectedEvent, setSelectedEvent] = useState(undefined)
     const [selectedEvents, setSelectedEvents] = useState(undefined)
     const [modalState, setModalState] = useState(false)
     const [selectedDate, setSelectedDate] = useState(undefined)
+    // Variables for the event to add
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
-    const [startDate, setStartDate] = useState(undefined)
-    const [endDate, setEndDate] = useState(undefined)
+    const [inputStartDate, setInputStartDate] = useState(undefined)
+    const [inputEndDate, setInputEndDate] = useState(undefined)
 
+    /*
+    * Get all events from the server
+    *
+    * @param null
+    * @return null
+    */
     function getEvents() {
         axios.get("/events/" + user.username)
             .then(response => {
-                const incomingEvents = response.data.map(({ start, end, ...rest }) => {
-                    return {
-                        start: new Date(Date.parse(start)),
-                        end: new Date(Date.parse(end)),
-                        ...rest
+                if (response.data !== null && response.data.data !== null) {
+                    console.log(response.data, response.data.data)
+                    const incomingEvents = response.data.data.map(({ start_date, end_date, ...rest }) => {
+                        return {
+                            // Need to format to a JS Date object so the calendar works properly
+                            startDate: new Date(Date.parse(start_date)),
+                            endDate: new Date(Date.parse(end_date)),
+                            ...rest
 
-                    }
-                })
-                setEvents(incomingEvents)
-                setFilteredEvents(incomingEvents)
+                        }
+                    })
+
+                    setEvents(incomingEvents)
+                    setFilteredEvents(incomingEvents)
+                } else {
+                    setEvents(undefined)
+                    setFilteredEvents(undefined)
+                }
+            }).catch(err => {
+                console.log("Error getting events for user " + err);
             })
     }
+
+    /*
+    * Handle adding an event
+    *
+    * @param null
+    * @return null
+    */
     function handleAddEvent() {
-        console.log(user)
         axios.post("/events",
             {
                 "title": title,
                 "description": description,
                 "username": user.username,
-                "start": startDate,
-                "end": endDate
+                "startDate": inputStartDate,
+                "endDate": inputEndDate
             })
             .then(response => {
-                console.log("added", response)
+                // console.log("Event added", response)
                 getEvents()
+            }).catch(err => {
+                console.log("Error adding events " + err);
             })
     }
 
+    /*
+    * Get events on component load
+    *
+    * @param null
+    * @return null
+    */
     useEffect(() => {
         getEvents()
     }, [])
 
+    /*
+    * Set values for a selected event
+    *
+    * @param event object to set as the selected event
+    * @return null
+    */
     const handleSelectedEvent = (event) => {
         setSelectedEvent(event)
         setModalState(true)
         setSelectedEvents(undefined)
     }
+
+    /*
+    * Handle filtering events by the "search"dang it
+    *
+    * @param  e  search page event
+    * @return null
+    */
     const handleSearch = (e) => {
         if (e.target.value.length < 1)
             setFilteredEvents(events)
         else {
-            let val = events.map(event => {
-                if (event.title.indexOf(e.target.value) !== -1 ||
-                    event.description.indexOf(e.target.value) !== -1
-                ) {
-                    return event
-                }
-                return null
-            })
-            setFilteredEvents(val)
+            if (events) {
+                let val = events.map(event => {
+                    // Check if matches the title or the description
+                    if (event.title.indexOf(e.target.value) !== -1 ||
+                        event.description.indexOf(e.target.value) !== -1
+                    ) {
+                        return event
+                    }
+                    return null
+                })
+                setFilteredEvents(val)
+            }
+
         }
     }
+
+    /*
+    * Handle event delete
+    *
+    * @param e page event (to stop the accordion from opening up)
+    * @param eventToDelete event object to delete
+    * @return null
+    */
     const handleDelete = (e, eventToDelete) => {
         e.stopPropagation();
         axios.delete("/events/" + eventToDelete.id)
-            .then(response => getEvents())
+            .then(() => getEvents())
+            .catch(err => {
+                console.log("Error deleting " + err);
+            })
+        // Delete from selected event or selected events
         if (selectedEvent) {
             setSelectedEvent(null)
         }
@@ -107,29 +172,43 @@ export default function Events({ user }) {
             setSelectedEvents(newSelectedEvents)
         }
     }
+
+    /*
+    * Handle choosing a particular slot/date on calendar
+    *
+    * @param selectedSlot slot to choose as active from the page 
+    * @return null
+    */
     const handleSelectedSlot = (selectedSlot) => {
         setSelectedEvent(undefined)
         setSelectedEvents(undefined)
         const { start, end } = selectedSlot;
         const startDate = new Date(start)
         const endDate = new Date(end)
-        const eventsForThisDay = events.filter(
-            event => {
-                if (startDate.toDateString() == (new Date(event.start).toDateString()) ||
-                    (startDate.toDateString() > (new Date(event.start).toDateString())
-                        && endDate.toDateString() < (new Date(event.end).toDateString()))) {
-                    return true
+        // Filter events by the date range of the slot
+        if (events !== undefined) {
+            const eventsForThisDay = events.filter(
+                event => {
+                    console.log(event)
+                    if (startDate.toDateString() == (new Date(event.startDate).toDateString()) ||
+                        (startDate.toDateString() > (new Date(event.startDate).toDateString())
+                            && endDate.toDateString() < (new Date(event.endDate).toDateString()))) {
+                        return true
+                    }
                 }
+            )
+            // Show views if necessary (slot is not empty)
+            if (eventsForThisDay.length > 0) {
+                setSelectedEvents(eventsForThisDay)
+                setModalState(true)
+                setSelectedDate(startDate.toDateString())
+            } else {
+                setModalState(false)
             }
-        )
-        if (eventsForThisDay.length > 0) {
-            setSelectedEvents(eventsForThisDay)
-            setModalState(true)
-            setSelectedDate(startDate.toDateString())
-        } else {
-            setModalState(false)
         }
     }
+
+    // Modal view for the selected event
     const Modal = () => {
         return (
             <div className={`modal-${modalState == true ? 'show' : 'hide'}`}>
@@ -138,29 +217,35 @@ export default function Events({ user }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '100vw',
                     bgcolor: 'background.paper'
-                }}>
+                }}width={"50vw"}>
                     <List>
                         <Typography variant="h4" align="center">
                             Event: {selectedEvent.title}
                         </Typography>
                         <ListItem  >
-                            <Accordion sx={{ width: 1000 }}>
+                            <Accordion>
                                 <AccordionSummary
                                     expandIcon={<ExpandMoreIcon />}
                                     aria-controls="panel1a-content"
                                     id="panel1a-header"
                                     sx={{ display: "flex" }}
                                 >
-                                    <Typography align="left" sx={{ width: '100%' }}>{selectedEvent.title}</Typography>
-                                    <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={(e) => handleDelete(e, selectedEvent)}>
+                                    <Typography align="left" width={"40vw"}><b>Title:</b> {selectedEvent.title}</Typography>
+                                    <Button align="right" variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={e => handleDelete(e, selectedEvent)}>
                                         <Typography variant="caption">Delete</Typography>
                                     </Button>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Typography>
-                                        {selectedEvent.description}
+                                        <div>
+                                            <Typography>
+                                                <b>Description:</b> {selectedEvent.description}
+                                            </Typography>
+                                            <Typography>
+                                                <b>Start:</b> {selectedEvent.startDate.toDateString()} <b>End:</b> {selectedEvent.endDate.toDateString()}
+                                            </Typography>
+                                        </div>
                                     </Typography>
                                 </AccordionDetails>
                             </Accordion>
@@ -171,6 +256,8 @@ export default function Events({ user }) {
             </div>
         )
     }
+
+    //Modal view for the selected events
     const MultiEventsModal = () => {
         return (
             <div className={`modal-${modalState == true ? 'show' : 'hide'}`}>
@@ -179,32 +266,36 @@ export default function Events({ user }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: '100vw',
                     bgcolor: 'background.paper'
-                }}>
-                    <List>
+                }} width={"50vw"}>
+                    <List >
                         <Typography variant="h4" align="center">
                             Events For: {selectedDate}
                         </Typography>
-                        {selectedEvents.map(selectedEvent => {
+                        {selectedEvents.map(currentEvent => {
                             return (
                                 <ListItem >
-                                    <Accordion sx={{ width: 1000 }}>
+                                    <Accordion>
                                         <AccordionSummary
                                             expandIcon={<ExpandMoreIcon />}
                                             aria-controls="panel1a-content"
                                             id="panel1a-header"
                                             sx={{ display: "flex" }}
                                         >
-                                            <Typography align="left" sx={{ width: '100%' }}>{selectedEvent.title}</Typography>
-                                            <Button align="right" sx={{ width: '10%' }} variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={e => handleDelete(e, selectedEvent)}>
+                                            <Typography align="left" width={"40vw"}><b>Title:</b> {currentEvent.title}</Typography>
+                                            <Button align="right" variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={e => handleDelete(e, currentEvent)}>
                                                 <Typography variant="caption">Delete</Typography>
                                             </Button>
                                         </AccordionSummary>
                                         <AccordionDetails>
-                                            <Typography>
-                                                {selectedEvent.description}
-                                            </Typography>
+                                            <div>
+                                                <Typography>
+                                                    <b>Description:</b> {currentEvent.description}
+                                                </Typography>
+                                                <Typography>
+                                                    <b>Start:</b> {currentEvent.startDate.toDateString()} <b>End:</b> {currentEvent.endDate.toDateString()}
+                                                </Typography>
+                                            </div>
                                         </AccordionDetails>
                                     </Accordion>
                                 </ListItem>
@@ -252,42 +343,43 @@ export default function Events({ user }) {
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DateTimePicker
                                 label="Start"
-                                value={startDate}
-                                onChange={(newValue) => setStartDate(newValue)}
+                                value={inputStartDate}
+                                onChange={(newValue) => setInputStartDate(newValue)}
                                 slotProps={{ textField: { size: 'small' } }} />
                             <DateTimePicker
                                 label="End"
-                                value={endDate}
-                                onChange={(newValue) => setEndDate(newValue)}
+                                value={inputEndDate}
+                                onChange={(newValue) => setInputEndDate(newValue)}
                                 slotProps={{ textField: { size: 'small' } }}
                             />
                         </LocalizationProvider>
-                        <Button onClick={handleAddEvent} color="inherit" variant="outlined" sx={{height:40}}>Add Event</Button>
+                        <Button onClick={handleAddEvent} color="inherit" variant="outlined" sx={{ height: 40 }}>Add Event</Button>
                     </AccordionDetails>
                 </Accordion>
                 <Box
                     component="form"
                     sx={{
                         '& > :not(style)': { m: 1 },
-                        width: "100vw"
+                        display: "flex",
+                        width: "100%"
                     }}
                     noValidate
                     autoComplete="off"
-                >
 
+                >
+                    <Calendar
+                        localizer={localizer}
+                        events={filteredEvents}
+                        startAccessor="startDate"
+                        endAccessor="endDate"
+                        style={{ height: 500, width: "50vw", paddingTop: 6, paddingBottom: 6 }}
+                        selectable={true}
+                        onSelectSlot={(e) => handleSelectedSlot(e)}
+                        onSelectEvent={(e) => handleSelectedEvent(e)}
+                    />
+                    {selectedEvent && <Modal />}
+                    {selectedEvents && <MultiEventsModal />}
                 </Box>
-                <Calendar
-                    localizer={localizer}
-                    events={filteredEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: 500, paddingTop: 6, paddingBottom: 6 }}
-                    selectable={true}
-                    onSelectSlot={(e) => handleSelectedSlot(e)}
-                    onSelectEvent={(e) => handleSelectedEvent(e)}
-                />
-                {selectedEvent && <Modal />}
-                {selectedEvents && <MultiEventsModal />}
             </Box>
 
         </Box>

@@ -1,31 +1,42 @@
+/*
+ * App.js
+ * 7/19/2023
+ * Ian Percy
+ * 
+ * 
+ * Main view for the application. Entry point and renderer 
+ */
 import axios from "axios";
-import React, { useEffect, useState, useReducer, createContext } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "./components/Header"
 import Events from "./components/Events"
-import Cookies from 'js-cookie';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Theme } from "@material-ui/core/styles";
-import FilledInput from '@mui/material/FilledInput';
 import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
 import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
 import Divider from '@mui/material/Divider';
 
 function App() {
+  // Set the user object, username, and password state variables
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+
+  //On page load, check session storage for user
   useEffect(() => {
     if (sessionStorage.getItem("user") !== null) {
-
       setUser(JSON.parse(sessionStorage.getItem("user")))
     }
   }, [])
 
+  /*
+  * Handle login, calls backend with the saved username and password
+  *
+  * @param null
+  * @return null
+  */
   function handleLogin() {
     axios.post("/users/login",
       {
@@ -33,20 +44,37 @@ function App() {
         "password": password
       })
       .then(response => {
-        console.log("logged in", response)
-        setUser(response.data.user)
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
+        // console.log("User logged in", response)
+        setUser(response.data.data)
+        sessionStorage.setItem("user", JSON.stringify(response.data.data));
+      }).catch(err => {
+        console.log("Error logging in " + err)
       })
   }
-  function handleLogout() {
 
+  /*
+  * Handle logout, calls backend to unset the cookies
+  *
+  * @param null
+  * @return null
+  */
+  function handleLogout() {
     axios.post("/users/logout")
       .then(response => {
-        console.log("logged out", response)
+        // console.log("User logged out", response)
         setUser(null)
         sessionStorage.removeItem("user");
+      }).catch(err => {
+        console.log("Error logging out " + err)
       })
   }
+
+  /*
+  * Handle register, calls backend with the saved username and password
+  *
+  * @param null
+  * @return null
+  */
   function handleRegister() {
     axios.post("/users/register",
       {
@@ -54,16 +82,18 @@ function App() {
         "password": password
       })
       .then(response => {
-        console.log("registered", response)
-        setUser(response.data.user)
-        sessionStorage.setItem("user", JSON.stringify(response.data.user));
+        // console.log("User registered", response)
+        setUser(response.data.data)
+        sessionStorage.setItem("user", JSON.stringify(response.data.data));
+      }).catch(err => {
+        console.log("Error registering user " + err)
       })
   }
 
   return (
     <div>
       <Header user={user} handleLogin={handleLogin} setUser={setUser} handleLogout={handleLogout} />
-      {user ? 
+      {user ?
         <Events user={user} /> :
         <Box
           component="form"

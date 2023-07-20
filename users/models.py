@@ -1,5 +1,15 @@
-from flask import render_template
+# -*- coding: utf-8 -*-
+"""
+    users/models.py
+    ~~~~~~~~~~~~~~
+
+    Model class for the User object (users table)
+    Controls users that will interact with the DB/application
+
+    2023 by Ian Percy
+"""
 from shared.db import db
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -17,10 +27,8 @@ class User(db.Model):
             "password": self.password,
             "email": self.email,
             "refresh_token": self.refresh_token,
-            "date_created": self.date_created
+            "date_created": self.date_created,
         }
+
     def to_frontend_json(self):
-        return {
-            "username": self.username,
-            "email": self.email
-        }
+        return {"username": self.username, "email": self.email}
