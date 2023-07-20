@@ -25,7 +25,7 @@ def get_all_users():
         users (list): List of user objects"""
     try:
         query_results = User.query.all()
-        users = [u.to_json() for u in query_results]
+        users = [u.to_frontend_json() for u in query_results]
         return users
     except exc.SQLAlchemyError as e:
         logger.error("Error getting all users from DB " + e)
@@ -42,7 +42,7 @@ def get_user_by_username(username):
         result (user): user object match"""
     try:
         match = User.query.filter_by(username=username).first()
-        return match
+        return match.to_frontend_json()
     except exc.SQLAlchemyError as e:
         logger.error("Error getting user by username " + e)
         return None   
@@ -57,7 +57,7 @@ def get_user_by_id(id):
         result (user): user object match"""
     try:
         match = User.query.filter_by(id=id).first()
-        return match.to_json()
+        return match.to_frontend_json()
     except exc.SQLAlchemyError as e:
         logger.error("Error getting user by id " + e)
         return None   

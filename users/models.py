@@ -31,4 +31,4 @@ class User(db.Model):
         }
 
     def to_frontend_json(self):
-        return {"username": self.username, "email": self.email}
+        return {"username": self.username, "email": self.email, "id": self.id}

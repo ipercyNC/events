@@ -116,14 +116,14 @@ def setup_db(app):
 def run_gunicorn():
     app = create_app()
     app = init_db_and_jwt(app)
-    app = setup_db(app)
+    # app = setup_db(app) # Comment out unless needing a fresh setup of the DB
     return app
     
 if __name__ == "__main__":
     logger.info("Server starting")
     app = create_app()
     app = init_db_and_jwt(app)
-    app = setup_db(app)
+    # app = setup_db(app) # Comment out unless needing a fresh setup of the DB
     app.run(debug=False)
 
 

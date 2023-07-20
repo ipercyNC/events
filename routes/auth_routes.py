@@ -130,7 +130,7 @@ def login_user():
         resp = jsonify(
             {
                 "message": "User found",
-                "data": current_user.to_frontend_json(),
+                "data": current_user,
                 "error": None,
             }
         )
@@ -194,7 +194,7 @@ def login_user():
         resp = jsonify(
             {
                 "message": "User registered",
-                "data": current_user.to_frontend_json(),
+                "data": current_user,
                 "error": None,
             }
         )

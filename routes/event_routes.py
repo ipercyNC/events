@@ -222,7 +222,7 @@ def add_event():
         })
         return resp, 400
     # Create event and return response
-    event = create_event(title, description, current_user.id, start_date, end_date)
+    event = create_event(title, description, current_user["id"], start_date, end_date)
     if event:
         resp = jsonify({"message": "Event created", "data": event, "error": None})
     else:

@@ -29,6 +29,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import FormControl from '@mui/material/FormControl';
+import { subHours } from 'date-fns';
+
 const localizer = momentLocalizer(moment)
 
 export default function Events({ user }) {
@@ -206,16 +208,19 @@ export default function Events({ user }) {
         setSelectedEvent(undefined)
         setSelectedEvents(undefined)
         const { start, end } = selectedSlot;
-        const startDate = new Date(start)
-        const endDate = new Date(end)
+        const startDateRaw = new Date(start)
+        const startDate = subHours(startDateRaw, 2).toISOString().split('T')[0]
+        const endDateRaw = new Date(end)
+        const endDate = subHours(endDateRaw,24 ).toISOString().split('T')[0]
         // Filter events by the date range of the slot
         if (events !== undefined) {
             const eventsForThisDay = events.filter(
                 event => {
-                    console.log(event)
-                    if (startDate.toDateString() == (new Date(event.startDate).toDateString()) ||
-                        (startDate.toDateString() > (new Date(event.startDate).toDateString())
-                            && endDate.toDateString() < (new Date(event.endDate).toDateString()))) {
+                    const newEventStartDate = new Date(event.startDate).toISOString().split('T')[0]
+                    const newEventEndDate = new Date(event.endDate).toISOString().split('T')[0]
+                    console.log(startDate, newEventStartDate)
+                    console.log(endDate, newEventEndDate)
+                    if (( startDate >= newEventStartDate) && (endDate<= newEventEndDate )) {
                         return true
                     }
                 }
@@ -224,7 +229,7 @@ export default function Events({ user }) {
             if (eventsForThisDay.length > 0) {
                 setSelectedEvents(eventsForThisDay)
                 setModalState(true)
-                setSelectedDate(startDate.toDateString())
+                setSelectedDate(startDate)
             } else {
                 setModalState(false)
             }
@@ -404,6 +409,7 @@ export default function Events({ user }) {
                                     height: 500, width: "98vw", paddingTop: 6, paddingBottom: 6,
                                 }}
                                 selectable={true}
+                                selectedDate={selectedDate}
                                 onSelectSlot={(e) => handleSelectedSlot(e)}
                                 onSelectEvent={(e) => handleSelectedEvent(e)}
                             />
