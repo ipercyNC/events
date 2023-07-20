@@ -117,6 +117,7 @@ def run_gunicorn():
     app = create_app()
     app = init_db_and_jwt(app)
     app = setup_db(app)
+    return app
     
 if __name__ == "__main__":
     logger.info("Server starting")
