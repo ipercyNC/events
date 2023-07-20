@@ -45,6 +45,7 @@ export default function Events({ user }) {
     const [description, setDescription] = useState("")
     const [inputStartDate, setInputStartDate] = useState(undefined)
     const [inputEndDate, setInputEndDate] = useState(undefined)
+    const [view, setView] = useState("calendar")
 
     /*
     * Get all events from the server
@@ -74,7 +75,8 @@ export default function Events({ user }) {
                     setFilteredEvents(undefined)
                 }
             }).catch(err => {
-                console.log("Error getting events for user " + err);
+                console.log(err.response.data);
+                window.alert(err.response.data.message)
             })
     }
 
@@ -85,6 +87,10 @@ export default function Events({ user }) {
     * @return null
     */
     function handleAddEvent() {
+        if (!validate) {
+            window.alert("Please enter valid event values")
+            return
+        }
         axios.post("/events",
             {
                 "title": title,
@@ -96,8 +102,10 @@ export default function Events({ user }) {
             .then(response => {
                 // console.log("Event added", response)
                 getEvents()
+                console.log(response)
             }).catch(err => {
-                console.log("Error adding events " + err);
+                console.log(err.response.data);
+                window.alert(err.response.data.message)
             })
     }
 
@@ -150,6 +158,20 @@ export default function Events({ user }) {
     }
 
     /*
+    * Handle validate input for event
+    *
+    * @param null
+    * @return null
+    */
+    function validate() {
+        if (!title || title.length > 50 || !description || description.length > 100 ||
+            !inputStartDate || !inputEndDate) {
+            return false
+        }
+        return true
+    }
+
+    /*
     * Handle event delete
     *
     * @param e page event (to stop the accordion from opening up)
@@ -161,7 +183,8 @@ export default function Events({ user }) {
         axios.delete("/events/" + eventToDelete.id)
             .then(() => getEvents())
             .catch(err => {
-                console.log("Error deleting " + err);
+                console.log(err.response.data);
+                window.alert(err.response.data.message)
             })
         // Delete from selected event or selected events
         if (selectedEvent) {
@@ -214,17 +237,17 @@ export default function Events({ user }) {
             <div className={`modal-${modalState == true ? 'show' : 'hide'}`}>
                 <Divider sx={{ borderWidth: 5, borderBottomWidth: 5 }} />
                 <Box sx={{
+                    bgcolor: 'background.paper',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: 'background.paper'
-                }}width={"50vw"}>
+                }} width={"98wv"}>
                     <List>
                         <Typography variant="h4" align="center">
                             Event: {selectedEvent.title}
                         </Typography>
                         <ListItem  >
-                            <Accordion>
+                            <Accordion sx={{ width: "100%" }}>
                                 <AccordionSummary
                                     expandIcon={<ExpandMoreIcon />}
                                     aria-controls="panel1a-content"
@@ -267,7 +290,7 @@ export default function Events({ user }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     bgcolor: 'background.paper'
-                }} width={"50vw"}>
+                }} width={"98vw"}>
                     <List >
                         <Typography variant="h4" align="center">
                             Events For: {selectedDate}
@@ -356,29 +379,76 @@ export default function Events({ user }) {
                         <Button onClick={handleAddEvent} color="inherit" variant="outlined" sx={{ height: 40 }}>Add Event</Button>
                     </AccordionDetails>
                 </Accordion>
+                <span>
+                    <Button variant="contained" onClick={() => setView("calendar")} sx={{ margin: 1 }}>View Event Calendar</Button>
+                    <Button variant="contained" onClick={() => setView("list")} sx={{ margin: 1 }}>View Event List</Button>
+                </span>
                 <Box
                     component="form"
                     sx={{
                         '& > :not(style)': { m: 1 },
-                        display: "flex",
-                        width: "100%"
+                        display: "flex"
                     }}
                     noValidate
                     autoComplete="off"
 
                 >
-                    <Calendar
-                        localizer={localizer}
-                        events={filteredEvents}
-                        startAccessor="startDate"
-                        endAccessor="endDate"
-                        style={{ height: 500, width: "50vw", paddingTop: 6, paddingBottom: 6 }}
-                        selectable={true}
-                        onSelectSlot={(e) => handleSelectedSlot(e)}
-                        onSelectEvent={(e) => handleSelectedEvent(e)}
-                    />
-                    {selectedEvent && <Modal />}
-                    {selectedEvents && <MultiEventsModal />}
+                    {view === "calendar" ?
+                        <div sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <Calendar
+                                localizer={localizer}
+                                events={filteredEvents}
+                                startAccessor="startDate"
+                                endAccessor="endDate"
+                                style={{
+                                    height: 500, width: "98vw", paddingTop: 6, paddingBottom: 6,
+                                }}
+                                selectable={true}
+                                onSelectSlot={(e) => handleSelectedSlot(e)}
+                                onSelectEvent={(e) => handleSelectedEvent(e)}
+                            />
+                            {selectedEvent && <Modal />}
+                            {selectedEvents && <MultiEventsModal />}
+                        </div>
+                        :
+                        <List sx={{
+                            alignItems: 'center',
+                            justifyContent: 'center', width: "94wv"
+                        }}>
+                            <Typography variant="h4" align="center">
+                                Events
+                            </Typography>
+                            {filteredEvents.map(currentEvent => {
+                                return (
+                                    <ListItem >
+                                        <Accordion>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMoreIcon />}
+                                                aria-controls="panel1a-content"
+                                                id="panel1a-header"
+                                                sx={{ display: "flex" }}
+                                            >
+                                                <Typography align="left" width={"89vw"}><b>Title:</b> {currentEvent.title}</Typography>
+                                                <Button align="right" variant="outlined" startIcon={<DeleteIcon />} size="small" onClick={e => handleDelete(e, currentEvent)}>
+                                                    <Typography variant="caption">Delete</Typography>
+                                                </Button>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <div>
+                                                    <Typography>
+                                                        <b>Description:</b> {currentEvent.description}
+                                                    </Typography>
+                                                    <Typography>
+                                                        <b>Start:</b> {currentEvent.startDate.toDateString()} <b>End:</b> {currentEvent.endDate.toDateString()}
+                                                    </Typography>
+                                                </div>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    </ListItem>
+                                )
+                            })}
+                        </List>
+                    }
                 </Box>
             </Box>
 

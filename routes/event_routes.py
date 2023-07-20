@@ -20,6 +20,7 @@ from service.events import (
 from service.users import get_user_by_username
 from functools import wraps
 import jwt
+from dateutil.parser import parse
 
 # Create blueprint to be used in the application
 event_blueprint = Blueprint("event_blueprint", __name__)
@@ -171,7 +172,7 @@ def add_event():
         resp (Response): Response with the result of the event addition"""
     data = request.json
     if not data:
-        return {"message": "Please event data", "error": "Bad Request"}, 400
+        return {"message": "Please enter event data", "error": "Bad Request"}, 400
     # Check input values exist
     title = data.get("title", None)
     description = data.get("description", None)
@@ -181,11 +182,45 @@ def add_event():
     # Current the current user from the username (needed for id storage in the events table)
     current_user = get_user_by_username(username)
     if not title or not description or not username or not start_date or not end_date:
-        return {
+        resp = jsonify({
             "message": "Please provide all information for the event",
             "data": None,
             "error": "Bad Request",
-        }, 400
+        })
+        return resp, 400
+    
+    # Validate dates
+    if not valid_date(start_date):
+        resp = jsonify({
+            "message": "Please provide valid start date",
+            "data": None,
+            "error": "Bad Request",
+        })
+        return resp, 400
+    if not valid_date(end_date):
+        resp = jsonify({
+            "message": "Please provide valid end date",
+            "data": None,
+            "error": "Bad Request",
+        })
+        return resp, 400
+    
+    # Validate lengths of title and description
+    if len(title) > 254:
+        resp = jsonify({
+            "message": "Title is too long, please add a shorter title",
+            "data": None,
+            "error": "Bad Request",
+        })
+        return resp, 400
+    
+    if len(description) > 254:
+        resp = jsonify({
+            "message": "Description is too long, please add a shorter description",
+            "data": None,
+            "error": "Bad Request",
+        })
+        return resp, 400
     # Create event and return response
     event = create_event(title, description, current_user.id, start_date, end_date)
     if event:
@@ -193,3 +228,12 @@ def add_event():
     else:
         resp = jsonify({"message": "Event not created", "data": None, "error": None})
     return resp, 200
+
+def valid_date(date):
+    if date:
+        try: 
+            parse(date)
+            return True
+        except:
+            pass
+    return False

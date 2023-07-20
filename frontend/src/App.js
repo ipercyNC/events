@@ -38,6 +38,10 @@ function App() {
   * @return null
   */
   function handleLogin() {
+    if (!validate()){
+      window.alert("Please enter valid username and password")
+      return
+    }
     axios.post("/users/login",
       {
         "username": username,
@@ -48,7 +52,8 @@ function App() {
         setUser(response.data.data)
         sessionStorage.setItem("user", JSON.stringify(response.data.data));
       }).catch(err => {
-        console.log("Error logging in " + err)
+        console.log(err.response.data);
+        window.alert(err.response.data.message)
       })
   }
 
@@ -65,7 +70,8 @@ function App() {
         setUser(null)
         sessionStorage.removeItem("user");
       }).catch(err => {
-        console.log("Error logging out " + err)
+        console.log(err.response.data);
+        window.alert(err.response.data.message)
       })
   }
 
@@ -76,6 +82,10 @@ function App() {
   * @return null
   */
   function handleRegister() {
+    if (!validate()){
+      window.alert("Please enter valid username and password")
+      return
+    }
     axios.post("/users/register",
       {
         "username": username,
@@ -86,10 +96,23 @@ function App() {
         setUser(response.data.data)
         sessionStorage.setItem("user", JSON.stringify(response.data.data));
       }).catch(err => {
-        console.log("Error registering user " + err)
+        console.log(err.response.data);
+        window.alert(err.response.data.message)
       })
   }
 
+  /*
+  * Handle validate input for username and password
+  *
+  * @param null
+  * @return null
+  */
+  function validate() {
+    if (!username || username.length > 30 || !password || password.length > 30){
+      return false
+    }
+    return true
+  }
   return (
     <div>
       <Header user={user} handleLogin={handleLogin} setUser={setUser} handleLogout={handleLogout} />
@@ -117,7 +140,7 @@ function App() {
           </FormControl>
           <FormControl variant="standard">
             <InputLabel htmlFor="password">Password</InputLabel>
-            <Input id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="password" value={password} type="password" onChange={(e) => setPassword(e.target.value)} />
           </FormControl>
           <Button onClick={handleLogin} color="inherit" variant="outlined" size="large" sx={{
             height: 38

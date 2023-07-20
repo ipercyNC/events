@@ -46,7 +46,7 @@ def create_app():
     app.register_blueprint(event_blueprint)
 
     @app.errorhandler(Exception)
-    def handle_exception(e):
+    def handle_exception(e): 
         # Return error information
         response = e.get_response()
         response.data = json.dumps({
@@ -110,7 +110,7 @@ def setup_db(app):
             logger.info("Creation successful")
             return app
         except exc.IntegrityError as e:
-            print(e)
+            logger.error(e)
             db.session.rollback()
 
 def run_gunicorn():
