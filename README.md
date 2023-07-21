@@ -13,7 +13,7 @@ https://eventsservice.onrender.com/
 * In root dir, install packages - `pip install -r requirements.txt`
 * Change the `template.env` file to be only `.env`
 * In the `.env` file set your PostgreSQL SQLAchemy string (for your local PostgreSQL db) and also the secret key for the JWT
-* If running local, uncomment the `# app = setup_db(app) # Comment out unless needing a fresh setup of the DB` calls in `app.py` so that the local DB can be initialized
+* If running local, uncomment the `# app = setup_db(app) # Comment out unless needing a fresh setup of the DB` calls in `app.py` (at the end of the file) so that the local DB can be initialized
 * In the root directory - run `python app.py` - this will create the development flask server
 * In another terminal window, change directory to the frontend directory - install packages `npm install` and then after `npm run start`
 * Natigate to `http://localhost:3000/` in a browser to use the app
@@ -80,7 +80,7 @@ https://eventsservice.onrender.com/
 
 
 ## Notes:
-* Development was started just using the pyscopg driver to do manual queries, but the SQLAlchemy was chosen to speed up 
+* Development was started just using the pyscopg driver to do manual queries, but SQLAlchemy was chosen to speed up 
 the development. The functionality provided is cleaner than the quick implementation I would have been able to complete
 for SQL queries and validation.
 * I set this up initially to be run locally, but I developed it to be deployed and run on render.com. The Postgres server (production and testing)

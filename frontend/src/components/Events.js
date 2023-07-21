@@ -7,7 +7,7 @@
  * Events view for the application. This will allow users to see their events,
  * search, delete, and add events
  */
-import { useContext, useState, useEffect } from 'react';
+import {  useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import axios from 'axios';
@@ -119,7 +119,7 @@ export default function Events({ user }) {
     */
     useEffect(() => {
         getEvents()
-    }, [])
+    })
 
     /*
     * Set values for a selected event
@@ -154,6 +154,8 @@ export default function Events({ user }) {
                     return null
                 })
                 setFilteredEvents(val)
+                setSelectedEvent(undefined)
+                setSelectedEvents(undefined)
             }
 
         }
@@ -223,6 +225,7 @@ export default function Events({ user }) {
                     if (( startDate >= newEventStartDate) && (endDate<= newEventEndDate )) {
                         return true
                     }
+                    return false
                 }
             )
             // Show views if necessary (slot is not empty)
@@ -239,7 +242,7 @@ export default function Events({ user }) {
     // Modal view for the selected event
     const Modal = () => {
         return (
-            <div className={`modal-${modalState == true ? 'show' : 'hide'}`}>
+            <div className={`modal-${modalState === true ? 'show' : 'hide'}`}>
                 <Divider sx={{ borderWidth: 5, borderBottomWidth: 5 }} />
                 <Box sx={{
                     bgcolor: 'background.paper',
@@ -288,7 +291,7 @@ export default function Events({ user }) {
     //Modal view for the selected events
     const MultiEventsModal = () => {
         return (
-            <div className={`modal-${modalState == true ? 'show' : 'hide'}`}>
+            <div className={`modal-${modalState === true ? 'show' : 'hide'}`}>
                 <Divider sx={{ borderWidth: 5, borderBottomWidth: 5 }} />
                 <Box sx={{
                     display: 'flex',
