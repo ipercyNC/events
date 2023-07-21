@@ -29,7 +29,7 @@ def get_all_events():
         events = [e.to_json() for e in query_results]
         return events
     except exc.SQLAlchemyError as e:
-        logger.error("Error getting all events from DB " + e)
+        logger.error("Error getting all events from DB " + str(e))
         return None
 
 def delete_event_by_id(id):
@@ -45,7 +45,7 @@ def delete_event_by_id(id):
         db.session.commit()
         return True
     except exc.SQLAlchemyError as e:
-        logger.error("Error deleting event by id " + e)
+        logger.error("Error deleting event by id " + str(e))
         return False
 
 def get_events_by_username(username):
@@ -66,7 +66,7 @@ def get_events_by_username(username):
             logger.info("No user matches username " + username)
             return None
     except exc.SQLAlchemyError as e:
-        logger.error("Error searching for event by username and id " + e)
+        logger.error("Error searching for event by username and id " + str(e))
         return None
     
 def create_event(title, description, user_id, start_date, end_date):
@@ -87,5 +87,5 @@ def create_event(title, description, user_id, start_date, end_date):
         db.session.commit()
         return True
     except exc.SQLAlchemyError as e:
-        logger.error("Error creating event " + e)
+        logger.error("Error creating event " + str(e))
         return False

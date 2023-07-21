@@ -94,13 +94,14 @@ def login_user():
     username = data.get("username", None)
     # This needs to be encrypted on the frontend to prevent MITM attacks
     password = data.get("password", None)
-    logger.info("User login " + username)
+
 
     if not username or not password:
         return {
             "message": "Please provide username and password",
             "error": "Bad Request",
         }, 400
+    logger.info("User login " + username)
     password_hash = get_password_hash(username)
     if not password_hash:
         return {

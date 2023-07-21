@@ -8,13 +8,14 @@ Events contain simple events with a title, description, user associated with the
 This is running on the web. Check it out!
 https://eventsservice.onrender.com/
 ## How to Run:
-* Clone repo
-* Install packages - `pip install -r requirements.txt`
+* Clone repo `git clone https://github.com/ipercyNC/events.git .`
+* In root dir, install packages - `pip install -r requirements.txt`
 * Change the `template.env` file to be only `.env`
 * In the `.env` file set your PostgreSQL SQLAchemy string (for your local PostgreSQL db) and also the secret key for the JWT
 * If running local, uncomment the `# app = setup_db(app) # Comment out unless needing a fresh setup of the DB` calls in `app.py` so that the local DB can be initialized
 * In the root directory - run `python app.py` - this will create the development flask server
-* In another terminal window, navigate to the frontend directory - run `npm run start`
+* In another terminal window, change directory to the frontend directory - install packages `npm install` and then after `npm run start`
+* Natigate to `http://localhost:3000/` in a browser to use the app
 ** Note - both need to be running at the same time for the frontend and the backend to communicate
 ** The api calls will still be available without the frontend - but requires JWT, so Postman is recommended if just using api 
 
@@ -63,8 +64,8 @@ https://eventsservice.onrender.com/
 
  ## Tests:
  To run tests:
- * Clone repo as above
- * Install packages - `pip install -r requirements.txt`
+ * Clone repo `git clone https://github.com/ipercyNC/events.git .`
+ * In root dir, install packages - `pip install -r requirements.txt`
  * change the `template.env` file to be only `.env`
  * Populate the `TEST_DB_URL` and `TEST_JWT_SECRET_KEY` values in the .env file
  * Uncomment the `# app = setup_db(app) # Comment out unless needing a fresh setup of the DB` calls in `app.py` so that the local DB can be initialized

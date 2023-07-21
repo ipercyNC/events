@@ -28,7 +28,7 @@ def get_all_users():
         users = [u.to_frontend_json() for u in query_results]
         return users
     except exc.SQLAlchemyError as e:
-        logger.error("Error getting all users from DB " + e)
+        logger.error("Error getting all users from DB " + str(e))
         return None
 
 
@@ -42,9 +42,11 @@ def get_user_by_username(username):
         result (user): user object match"""
     try:
         match = User.query.filter_by(username=username).first()
+        if not match: 
+            return None
         return match.to_frontend_json()
     except exc.SQLAlchemyError as e:
-        logger.error("Error getting user by username " + e)
+        logger.error("Error getting user by username " + str(e))
         return None   
 
 def get_user_by_id(id):
@@ -57,9 +59,11 @@ def get_user_by_id(id):
         result (user): user object match"""
     try:
         match = User.query.filter_by(id=id).first()
+        if not match:
+            return None
         return match.to_frontend_json()
     except exc.SQLAlchemyError as e:
-        logger.error("Error getting user by id " + e)
+        logger.error("Error getting user by id " + str(e))
         return None   
 
 def get_password_hash(username):
@@ -76,7 +80,7 @@ def get_password_hash(username):
             return match.password
         return None
     except exc.SQLAlchemyError as e:
-        logger.error("Error getting user password hash " + e)
+        logger.error("Error getting user password hash " + str(e))
         return None   
 
 def set_refresh_token(username, token):
@@ -93,7 +97,7 @@ def set_refresh_token(username, token):
         db.session.commit()
         return True
     except exc.SQLAlchemyError as e:
-        logger.error("Error setting user token " + e)
+        logger.error("Error setting user token " + str(e))
         return False   
 
 
@@ -113,5 +117,5 @@ def create_user(username, generated_pass):
         db.session.commit()
         return True
     except exc.SQLAlchemyError as e:
-        logger.error("Error creating user " + e)
+        logger.error("Error creating user " + str(e))
         return False   

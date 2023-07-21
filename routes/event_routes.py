@@ -222,6 +222,13 @@ def add_event():
         })
         return resp, 400
     # Create event and return response
+    if not current_user:
+        resp = jsonify({
+            "message": "User does not exist",
+            "data": None,
+            "error": "Bad Request",
+        })
+        return resp, 400
     event = create_event(title, description, current_user["id"], start_date, end_date)
     if event:
         resp = jsonify({"message": "Event created", "data": event, "error": None})
@@ -229,7 +236,15 @@ def add_event():
         resp = jsonify({"message": "Event not created", "data": None, "error": None})
     return resp, 200
 
+
 def valid_date(date):
+    """check if date is valid
+    Args:
+        date (datetime): date to check
+
+    Returns:
+        boolean if valid or not
+    """
     if date:
         try: 
             parse(date)
