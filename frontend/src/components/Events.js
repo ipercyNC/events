@@ -29,7 +29,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import FormControl from '@mui/material/FormControl';
-import { subHours } from 'date-fns';
+import { addHours, subHours } from 'date-fns';
 
 const localizer = momentLocalizer(moment)
 
@@ -290,6 +290,8 @@ export default function Events({ user }) {
 
     //Modal view for the selected events
     const MultiEventsModal = () => {
+        const selectedDateRaw = new Date(selectedDate)
+        const selectedDateConverted = addHours(selectedDateRaw, 8).toDateString()
         return (
             <div className={`modal-${modalState === true ? 'show' : 'hide'}`}>
                 <Divider sx={{ borderWidth: 5, borderBottomWidth: 5 }} />
@@ -301,11 +303,11 @@ export default function Events({ user }) {
                 }} width={"98vw"}>
                     <List >
                         <Typography variant="h4" align="center">
-                            Events For: {selectedDate}
+                            Events For: {selectedDateConverted}
                         </Typography>
                         {selectedEvents.map(currentEvent => {
                             return (
-                                <ListItem >
+                                <ListItem key={currentEvent.id} >
                                     <Accordion>
                                         <AccordionSummary
                                             expandIcon={<ExpandMoreIcon />}
