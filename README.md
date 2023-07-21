@@ -4,6 +4,7 @@ This uses React (production build or local run), Flask, and a PostgreSQL (local 
 
 The main objects for the DB are: users and events. Users contain the user information for the event tracking.
 Events contain simple events with a title, description, user associated with the event, start datetime, and end datetime.
+User is linked in the events table with `user_id` referencing the id of the user table
 
 This is running on the web. Check it out!
 https://eventsservice.onrender.com/
@@ -20,7 +21,7 @@ https://eventsservice.onrender.com/
 ** The api calls will still be available without the frontend - but requires JWT, so Postman is recommended if just using api 
 
 ## Functionality
-(If running local - base url in front of the api calls is `localhost:5000`. Otherwise, use the Render app url as the base url. )
+(If running local - base url in front of the api calls is `localhost:5000`. Otherwise, use the Render app url as the base url. `https://eventsservice.onrender.com` ex: `https://eventsservice.onrender.com/users/login` )
 1) User can login or register
 - On the UI - enter username or password and press login or register (if new user)
 - API call - POST, `/users/login`  or `/users/register`,    body `{'username': <username>, 'password': <password>}`, headers = application/json
@@ -60,6 +61,12 @@ https://eventsservice.onrender.com/
 - On the UI - when viewing an event, click on the trashcan icon (delete) and the event will be removed from the UI and DB
 - API call - DELETE, `/events/<id>`, (replace the <id> with the id of the event to delete), headers = application/json
 - This will return 200 with a valid request and a list of events
+6) View event detail
+- On the UI - when selecting an event, the event will expand to open more details
+- API call (the UI get all bypasses this but the functionality exists)
+- GET, `/events/id/<id>`, (replace the <id> with the id of the event to delete), headers = application/json
+- This will return 200 with a valid request and a list of events
+
 
 
  ## Tests:

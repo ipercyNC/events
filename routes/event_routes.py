@@ -16,6 +16,7 @@ from service.events import (
     delete_event_by_id,
     get_events_by_username,
     create_event,
+    get_event_by_id
 )
 from service.users import get_user_by_username
 from functools import wraps
@@ -116,6 +117,38 @@ def view_events(current_user, username):
         resp = jsonify(
             {
                 "message": "No events found",
+                "data": None,
+                "error": "NO_EVENTS_FOUND",
+            }
+        )
+    return resp, 200
+
+@event_blueprint.route(
+    "/events/id/<id>", methods=["GET"], endpoint="get_events_by_id"
+)
+@token_required
+def view_events(current_user, id):
+    """View events for the chosen user
+
+    Args:
+        (in body)
+        username (string): username for the user
+
+    Returns:
+        resp (Response): Response with event objects"""
+    result = get_event_by_id(id)
+    if result:
+        resp = jsonify(
+            {
+                "message": "Event found",
+                "data": result,
+                "error": None,
+            }
+        )
+    else:
+        resp = jsonify(
+            {
+                "message": "No event found",
                 "data": None,
                 "error": "NO_EVENTS_FOUND",
             }

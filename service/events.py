@@ -16,6 +16,7 @@ from shared.db import db
 from root_logger import logger
 from sqlalchemy import exc
 
+
 def get_all_events():
     """Get all events from DB
 
@@ -31,6 +32,7 @@ def get_all_events():
     except exc.SQLAlchemyError as e:
         logger.error("Error getting all events from DB " + str(e))
         return None
+
 
 def delete_event_by_id(id):
     """Delete event from db
@@ -48,14 +50,15 @@ def delete_event_by_id(id):
         logger.error("Error deleting event by id " + str(e))
         return False
 
+
 def get_events_by_username(username):
     """Get all events by username
 
     Args:
-        username (string): event id to delete
+        username (string): username to search for in the events
 
     Returns:
-        result (list): list of events for the user """
+        result (list): list of events for the user"""
     try:
         match = User.query.filter_by(username=username).first()
         if match:
@@ -68,7 +71,27 @@ def get_events_by_username(username):
     except exc.SQLAlchemyError as e:
         logger.error("Error searching for event by username and id " + str(e))
         return None
-    
+
+
+def get_event_by_id(id):
+    """Get event by id
+
+    Args:
+        id (int): event id to search for in the DB
+
+    Returns:
+        result (event): user object match"""
+    try:
+        match = Event.query.filter_by(id=id).first()
+        if not match:
+            return None
+        return match.to_json()
+    except exc.SQLAlchemyError as e:
+        logger.error("Error getting event by id " + str(e))
+        return None   
+
+
+
 def create_event(title, description, user_id, start_date, end_date):
     """Create event
 
@@ -80,10 +103,17 @@ def create_event(title, description, user_id, start_date, end_date):
         end_date (string/Date): end datetime of the event
 
     Returns:
-        result (boolean): success of the addition """
+        result (boolean): success of the addition"""
     try:
-        db.session.add(Event(title=title, description=description, 
-            user_id=user_id, start_date=start_date, end_date=end_date))
+        db.session.add(
+            Event(
+                title=title,
+                description=description,
+                user_id=user_id,
+                start_date=start_date,
+                end_date=end_date,
+            )
+        )
         db.session.commit()
         return True
     except exc.SQLAlchemyError as e:
