@@ -15,7 +15,7 @@ https://eventsservice.onrender.com/
 * In the `.env` file set your PostgreSQL SQLAchemy string (for your local PostgreSQL db) and also the secret key for the JWT
 * If running local, uncomment the `# app = setup_db(app) # Comment out unless needing a fresh setup of the DB` calls in `app.py` (at the end of the file) so that the local DB can be initialized
 * In the root directory - run `python app.py` - this will create the development flask server
-* In another terminal window, change directory to the frontend directory - install packages `npm install` and then after `npm run start`
+* In another terminal window, change directory to the frontend directory `cd frontend` - install packages `npm install` and then after `npm run start`
 * Natigate to `http://localhost:3000/` in a browser to use the app
 ** Note - both need to be running at the same time for the frontend and the backend to communicate
 ** The api calls will still be available without the frontend - but requires JWT, so Postman is recommended if just using api 

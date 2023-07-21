@@ -144,16 +144,22 @@ export default function Events({ user }) {
             setFilteredEvents(events)
         else {
             if (events) {
-                let val = events.map(event => {
+                let val = events.filter(event => {
                     // Check if matches the title or the description
                     if (event.title.indexOf(e.target.value) !== -1 ||
                         event.description.indexOf(e.target.value) !== -1
                     ) {
-                        return event
+                        return true
                     }
-                    return null
+                    return false
                 })
-                setFilteredEvents(val)
+                // Catch if no results from the filter
+                if (val.length >= 1){
+                    setFilteredEvents(val)
+                }
+                else {
+                    setFilteredEvents(undefined)
+                }
                 setSelectedEvent(undefined)
                 setSelectedEvents(undefined)
             }
@@ -429,7 +435,7 @@ export default function Events({ user }) {
                             <Typography variant="h4" align="center">
                                 Events
                             </Typography>
-                            {filteredEvents.map(currentEvent => {
+                            {filteredEvents? filteredEvents.map(currentEvent => {
                                 return (
                                     <ListItem >
                                         <Accordion>
@@ -457,7 +463,10 @@ export default function Events({ user }) {
                                         </Accordion>
                                     </ListItem>
                                 )
-                            })}
+                            }):
+                            <Typography align="center" width={"89vw"}><b>Please add event</b></Typography>
+
+                            }
                         </List>
                     }
                 </Box>
