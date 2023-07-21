@@ -265,9 +265,10 @@ def add_event():
     event = create_event(title, description, current_user["id"], start_date, end_date)
     if event:
         resp = jsonify({"message": "Event created", "data": event, "error": None})
+        return resp, 200
     else:
         resp = jsonify({"message": "Event not created", "data": None, "error": None})
-    return resp, 200
+        return resp, 500
 
 
 def valid_date(date):
