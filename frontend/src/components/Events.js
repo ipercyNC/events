@@ -119,7 +119,7 @@ export default function Events({ user }) {
     */
     useEffect(() => {
         getEvents()
-    })
+    }, [])
 
     /*
     * Set values for a selected event
