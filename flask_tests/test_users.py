@@ -1,7 +1,19 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_tests/test_users.py
+    ~~~~~~~~~~~~~~
+
+    Test the users endpoints
+
+    2023 by Ian Percy
+"""
 import json
 from users.models import User
 
-def test_register_user(client):     
+def test_register_user(client): 
+    """
+    Test registering a new user
+    """    
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -13,11 +25,13 @@ def test_register_user(client):
     }
     register_response = client.post('/users/register', data=json.dumps(login_data), headers=headers)
     assert register_response.status_code == 200
-    print(register_response.json['data']['username'])
     assert register_response.json['data']['username'] == 'doesnt_exist'
 
 
-def test_login_user(client):     
+def test_login_user(client):   
+    """
+    Test logging in a known user
+    """  
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -32,6 +46,9 @@ def test_login_user(client):
     assert login_response.status_code == 200
 
 def test_get_user_by_id(app, client):
+    """
+    Test getting a user by id
+    """
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -45,6 +62,7 @@ def test_get_user_by_id(app, client):
     login_response = client.post('/users/login', data=json.dumps(login_data), headers=headers)
     assert login_response.status_code == 200
     with app.app_context():
+        # Find the User object by the username
         match = User.query.filter_by(username="guest").first()
         assert match != None
         get_user_by_id_response = client.get('/users/' + str(match.id), headers=headers)
@@ -53,6 +71,9 @@ def test_get_user_by_id(app, client):
 
 
 def test_user_logout(client):
+    """ 
+    Test logging out a user
+    """
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,

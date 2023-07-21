@@ -1,7 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_tests/test_events.py
+    ~~~~~~~~~~~~~~
+
+    Test the events endpoints
+
+    2023 by Ian Percy
+"""
 import json
 from service.events import get_events_by_username
 
-def test_create_event(client):     
+def test_create_event(client):   
+    """
+    Test creating a new event
+    """  
+    # Login user for the JWT token
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -25,6 +38,10 @@ def test_create_event(client):
     assert add_event_response.status_code == 200
 
 def test_create_and_get_events(client):
+    """
+    Test creating an event then gathering events for user
+    """
+    # Login the user for the JWT token
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -47,11 +64,16 @@ def test_create_and_get_events(client):
     add_event_response = client.post('/events', data=json.dumps(event1_data), headers=headers)
     assert add_event_response.status_code == 200
 
+    # Get all events
     get_events_response = client.get("/events/guest", headers=headers)
     assert get_events_response.status_code == 200
 
 
 def test_delete_event(app, client):
+    """
+    Test deleting an event
+    """
+    # Login the user for the JWT token
     mimetype = 'application/json'
     headers = {
         'Content-Type': mimetype,
@@ -77,5 +99,6 @@ def test_delete_event(app, client):
         events = get_events_by_username("guest")
         first_event = events[0]
 
+        # Delete user
         delete_event_response = client.delete("/events/" + str(first_event["id"]), headers=headers)    
         assert delete_event_response.status_code == 200

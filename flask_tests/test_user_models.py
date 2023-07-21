@@ -1,11 +1,18 @@
+# -*- coding: utf-8 -*-
+"""
+    flask_tests/test_user_models.py
+    ~~~~~~~~~~~~~~
+
+    Test the users models
+
+    2023 by Ian Percy
+"""
 from users.models import User
 
 
 def test_new_user():
     """
-    GIVEN a User model
-    WHEN a new User is created
-    THEN check the email, hashed_password, and role fields are defined correctly
+    Test creating a new User object
     """
     user = User(
         username="unit_test",
