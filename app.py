@@ -22,6 +22,7 @@ from users.models import User
 from events.models import Event
 from root_logger import logger
 import json
+from werkzeug.exceptions import HTTPException
 
 load_dotenv()
 def create_app():
@@ -45,7 +46,7 @@ def create_app():
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(event_blueprint)
 
-    @app.errorhandler(Exception)
+    @app.errorhandler(HTTPException)
     def handle_exception(e): 
         # Return error information
         response = e.get_response()
