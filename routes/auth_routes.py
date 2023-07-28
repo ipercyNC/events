@@ -28,6 +28,7 @@ from functools import wraps
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from root_logger import logger
+import random
 
 # Create the blueprint to be used in the application
 auth_blueprint = Blueprint("auth_blueprint", __name__)
@@ -296,3 +297,28 @@ def login_user():
     resp = jsonify({"message": "Logout success", "data": None, "error": None})
     unset_jwt_cookies(resp)
     return resp, 200
+
+
+@auth_blueprint.route("/users/error", methods=["GET"], endpoint="generate_user_error")
+def verify_user():
+    """Trigger error for New Relic monitoring to see
+    Args:
+        None
+    Returns:
+        None"""
+    error_array = [
+        "TypeError: Random type error -user",
+        "UndefinedError: Random undefined error -user",
+        "Syntax: Random syntax error -user",
+        "IOError: Random IOError -user",
+        "Logic: Random logic error -user",
+        "ReferenceError: Random reference error -user",
+        "UnicodeDecodeError: Random unicode error -user",
+        "EOFError: Random EOF error -user",
+        "OSError: Random OS Error -user",
+        "RuntimeError: random runtime error -user",
+    ]
+    # Generate random exception for New Relic to see
+
+    random_number = random.randint(0,9)
+    raise Exception(error_array[random_number])

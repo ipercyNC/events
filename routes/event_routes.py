@@ -286,3 +286,27 @@ def valid_date(date):
         except:
             pass
     return False
+
+
+@event_blueprint.route("/events/error", methods=["GET"], endpoint="generate_event_error")
+def verify_user():
+    """Trigger error for New Relic monitoring to see
+    Args:
+        None
+    Returns:
+        None"""
+    error_array = [
+        "TypeError: Random type error -event",
+        "UndefinedError: Random undefined error -event",
+        "IOError: Random IOError -event",
+        "Logic: Random logic error -event",
+        "ReferenceError: Random reference error -event",
+        "UnicodeDecodeError: Random unicode error -event",
+        "EOFError: Random EOF error -event",
+        "OSError: Random OS Error -event",
+        "RuntimeError: random runtime error -event"
+    ]
+    # Generate random exception for New Relic to see
+
+    random_number = random.randint(0,9)
+    raise Exception(error_array[random_number])
