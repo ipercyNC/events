@@ -46,17 +46,17 @@ def create_app():
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(event_blueprint)
 
-    @app.errorhandler(HTTPException)
-    def handle_exception(e): 
-        # Return error information
-        response = e.get_response()
-        response.data = json.dumps({
-            "code": e.code,
-            "name": e.name,
-            "description": e.description,
-        })
-        response.content_type = "application/json"
-        return response
+    # @app.errorhandler(HTTPException)
+    # def handle_exception(e): 
+    #     # Return error information
+    #     response = e.get_response()
+    #     response.data = json.dumps({
+    #         "code": e.code,
+    #         "name": e.name,
+    #         "description": e.description,
+    #     })
+    #     response.content_type = "application/json"
+    #     return response
 
     # Render the main route for the application - serves the static html from React
     @app.route("/")
